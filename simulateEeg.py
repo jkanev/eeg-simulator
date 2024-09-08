@@ -3,6 +3,7 @@ File to simulate multiple LSL streams.
 Each stream consists of 64 channels with an Ornstein-Uhlenbeckprocess in each (coloured noise).
 Added alpha noise at 10 Hz occurs from time to time in O1, O2 and Oz.
 """
+import datetime
 import random
 import mne
 import numpy as np
@@ -55,6 +56,7 @@ class Channel:
         for c in neighbours:
             self._neighbours.append(c)
             self._neighbour_alpha_intensity += c.get_alpha_intensity()
+
     def get_name(self):
         return self._name
 
@@ -133,7 +135,9 @@ class EegRecording:
     A class representing a person's head, consisting of multiple EEG channels
     """
     _info = None
+    _data = None
     _samplingFreq = 500
+    _samples = 0
     _channels = []
     _dt = 0.002
 
@@ -223,14 +227,21 @@ class EegRecording:
         self._info = mne.create_info(channel_names, ch_types=channel_types, sfreq=1.0 / self._dt)
         print(self._info)
 
+    def get_info(self):
+        return self._info
+
     def run(self, samples):
         """
         Run the recording for a certain amount of samples
-        :return: An MNE object containing samples, channel information, sampling rate information
+        :return: an array with data
         """
 
-        # create eeg data
-        eeg = np.zeros((len(self._channels), samples))
+        # create eeg data if necessary
+        if not self._data or samples != self._samples:
+            self._data = np.zeros((len(self._channels), samples))
+            self._samples = samples
+
+        # read eeg data from channels, sample by sample
         for n in range(0, samples):
 
             # first advance all noise sources
@@ -239,12 +250,23 @@ class EegRecording:
 
             # then calculate all eeg and alpha values
             for c in range(0, len(self._channels)):
-                eeg[c, n] = self._channels[c].read_eeg()
+                self._data[c, n] = self._channels[c].read_eeg()
 
         # return the mne object of the recording
-        return mne.io.RawArray(eeg, self._info)
+        return self._data
 
+
+# init EEG class
 recording = EegRecording()
-data = recording.run(5000)
-data.plot(block=True, show_scrollbars=False, show_scalebars=True,
-                         remove_dc=False, scalings={'eeg': 20e-6, 'misc': 5.0})
+
+# get 10 s of data
+time_s = 10     # seconds of data
+start_time = datetime.datetime.now()
+raw_data = recording.run(time_s * 500)     # run
+end_time = datetime.datetime.now()
+print("Simulated {} seconds of data in {}.".format(time_s, end_time - start_time))
+
+# plot using MNE
+eeg = mne.io.RawArray(raw_data, recording.get_info())
+eeg.plot(block=True, show_scrollbars=False, show_scalebars=True,
+         remove_dc=False, scalings={'eeg': 20e-6, 'misc': 5.0})
