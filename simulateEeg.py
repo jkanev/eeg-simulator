@@ -88,29 +88,38 @@ class Channel:
 
         # standard channels
         if self._type == "eeg":
+
             # calculate next point in EEG
             current_noise = self._ownNoiseFactor * self._currentNoise
             for nb in self._neighbours:
                 current_noise += nb.read_noise() / len(self._neighbours)
             self._currentEeg += 50.0*(-self._currentEeg + current_noise) * self._dt
 
-            # calculate next alpha value
-            self._currentAlpha = np.sin(self._currentAlphaPhase)     # current phase
-            alpha_change_speed = 8.0    # how fast the state changes
-            # the threshold is a slowly filtered version of our current eeg
-            self._currentAlphaThreshold += alpha_change_speed \
-                                           * (-self._currentAlphaThreshold + 0.1 * self._currentEeg)\
-                                           * self._dt
-            alpha_steepness = 5000.0    # how steeply the amplitude changes on flips
-            # run a sigmoid over the threshold to limit to 0-1
-            alphaFactor = 1.0 / (1.0 + np.exp(alpha_steepness * self._currentAlphaThreshold))
+            if self._alphaIntensity > 0.0:
 
-            # square so there are more down-times than up-times
-            self._currentAlphaAmplitude = alphaFactor * self._alphaIntensity
+                # calculate next alpha sine value
+                self._currentAlpha = np.sin(self._currentAlphaPhase)     # current phase
 
-            # assemble eeg and alpha
-            eegFactor = (self._eegIntensity - self._currentAlphaAmplitude)
-            rawEeg = eegFactor * self._currentEeg + self._currentAlphaAmplitude * self._currentAlpha
+                # calculate alpha amplitude
+                alpha_change_speed = 8.0    # how fast the state changes
+                # the threshold is a slowly filtered version of our current eeg
+                self._currentAlphaThreshold += alpha_change_speed \
+                                               * (-self._currentAlphaThreshold + 0.1 * self._currentEeg)\
+                                               * self._dt
+                alpha_steepness = 5000.0    # how steeply the amplitude changes on flips
+                # run a sigmoid over the threshold to limit to 0-1
+                alphaFactor = 1.0 / (1.0 + np.exp(alpha_steepness * self._currentAlphaThreshold))
+
+                # factor for alpha ranges from 0 to alpha-intensity, factor for eeg is scaled such that
+                # alpha-amplitude + eeg-amplitude = eeg-intensity
+                self._currentAlphaAmplitude = alphaFactor * self._alphaIntensity
+                eegAmplitude = self._eegIntensity * self._eegIntensity / (self._eegIntensity + self._currentAlphaAmplitude)
+            else:
+                # if alpha-intensity is zero, eeg amplitude is as defined
+                eegAmplitude = self._eegIntensity
+
+            # raw eeg is an interpolation between the noise value and the alpha sine wave
+            rawEeg = eegAmplitude * self._currentEeg + self._currentAlphaAmplitude * self._currentAlpha
             sample = rawEeg * 5.0e-5
 
         # readout channels (helper channel to read overall alpha aamplitudes)
@@ -149,8 +158,8 @@ class EegRecording:
 
         # define all channels
         # frontal
-        fp1 = Channel('Fp1', 0.0, 1.5, 0.5)
-        fp2 = Channel('Fp2', 0.0, 1.5, 0.5)
+        fp1 = Channel('Fp1', 0.0, 1.4, 0.5)
+        fp2 = Channel('Fp2', 0.0, 1.4, 0.5)
         f7 = Channel('F7', 0.0, 1.0, 0.3)
         f3 = Channel('F3', 0.0, 1.0, 0.3)
         fz = Channel('Fz', 0.0, 1.0, 0.3)
@@ -160,7 +169,7 @@ class EegRecording:
         # central
         t3 = Channel('T3', 0.05, 1.0, 0.3)
         c3 = Channel('C3', 0.05, 1.0, 0.3)
-        cz = Channel('Cz', 0.05, 1.5, 0.3)
+        cz = Channel('Cz', 0.05, 1.3, 0.3)
         c4 = Channel('C4', 0.05, 1.0, 0.3)
         t4 = Channel('T4', 0.05, 1.0, 0.3)
 
