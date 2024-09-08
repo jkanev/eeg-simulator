@@ -213,6 +213,7 @@ class EegRecording:
         # save
         self._channels.append(fp1)
         self._channels.append(fp2)
+        self._channels.append(f7)
         self._channels.append(f3)
         self._channels.append(fz)
         self._channels.append(f4)
@@ -281,6 +282,8 @@ eeg = mne.io.RawArray(raw_data, recording.get_info())
 curves = eeg.plot(show_scrollbars=False, show_scalebars=True,
                   remove_dc=False, scalings={'eeg': 20e-6, 'misc': 5.0})
 curves.savefig('simulated_curves.png')
+splot = eeg.plot_sensors(show=True, show_names=True)
+splot.savefig('simulated_sensors.png')
 
 # export
 eeg.export('simulated_eeg.edf', overwrite=True)
@@ -291,3 +294,12 @@ splot = spectrum.plot(show=True, average=True, picks=['O1', 'O2', 'T5', 'P3', 'P
 splot.savefig('simulated_spectrum.png')
 tmap = spectrum.plot_topomap(show=True, cmap='coolwarm')
 tmap.savefig('simulated_topomap.png')
+
+# report
+report = mne.Report(title="Simulated Data")
+report.add_raw(raw=eeg, title="Info", butterfly=False, psd=False)  # omit PSD plot
+report.add_image('simulated_curves.png', title="EEG Static (10 s)")
+report.add_image('simulated_spectrum.png', title="Spectrum of Channels O1, O2, T5, P3, Pz, P4, T6")
+report.add_image('simulated_sensors.png', title="Sensor Layout")
+report.add_image('simulated_topomap.png', title="Tological Plot")
+report.save("simulated_report.html", overwrite=True)
