@@ -158,8 +158,8 @@ class EegRecording:
 
         # define all channels
         # frontal
-        fp1 = Channel('Fp1', 0.0, 1.4, 0.5)
-        fp2 = Channel('Fp2', 0.0, 1.4, 0.5)
+        fp1 = Channel('Fp1', 0.0, 1.4, 0.3)
+        fp2 = Channel('Fp2', 0.0, 1.4, 0.3)
         f7 = Channel('F7', 0.0, 1.0, 0.3)
         f3 = Channel('F3', 0.0, 1.0, 0.3)
         fz = Channel('Fz', 0.0, 1.0, 0.3)
@@ -179,8 +179,8 @@ class EegRecording:
         pz = Channel('Pz', 0.1, 1.0, 0.3)
         p4 = Channel('P4', 0.1, 1.0, 0.3)
         t6 = Channel('T6', 0.1, 1.0, 0.3)
-        o1 = Channel('O1', 0.3, 1.0, 0.2)
-        o2 = Channel('O2', 0.3, 1.0, 0.2)
+        o1 = Channel('O1', 0.3, 1.0, 0.3)
+        o2 = Channel('O2', 0.3, 1.0, 0.3)
 
         # inverse alpha
         m = Channel('Alpha Total', 0.5, 0.0, 0.0, channel_type='misc')
@@ -234,6 +234,7 @@ class EegRecording:
         channel_names = [c.get_name() for c in self._channels]
         channel_types = [c.get_type() for c in self._channels]
         self._info = mne.create_info(channel_names, ch_types=channel_types, sfreq=1.0 / self._dt)
+        self._info.set_montage("standard_1020")
         print(self._info)
 
     def get_info(self):
@@ -269,13 +270,24 @@ class EegRecording:
 recording = EegRecording()
 
 # get 10 s of data
-time_s = 10     # seconds of data
+time_s = 50     # seconds of data
 start_time = datetime.datetime.now()
 raw_data = recording.run(time_s * 500)     # run
 end_time = datetime.datetime.now()
 print("Simulated {} seconds of data in {}.".format(time_s, end_time - start_time))
 
-# plot using MNE
+# plot curves
 eeg = mne.io.RawArray(raw_data, recording.get_info())
-eeg.plot(block=True, show_scrollbars=False, show_scalebars=True,
-         remove_dc=False, scalings={'eeg': 20e-6, 'misc': 5.0})
+curves = eeg.plot(show_scrollbars=False, show_scalebars=True,
+                  remove_dc=False, scalings={'eeg': 20e-6, 'misc': 5.0})
+curves.savefig('simulated_curves.png')
+
+# export
+eeg.export('simulated_eeg.edf', overwrite=True)
+
+# plot spectrum
+spectrum = eeg.compute_psd(fmin=0, fmax=50)
+splot = spectrum.plot(show=True, average=True, picks=['O1', 'O2', 'T5', 'P3', 'Pz', 'P4', 'T6'], amplitude=False)
+splot.savefig('simulated_spectrum.png')
+tmap = spectrum.plot_topomap(show=True, cmap='coolwarm')
+tmap.savefig('simulated_topomap.png')
