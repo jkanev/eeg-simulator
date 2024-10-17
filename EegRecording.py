@@ -111,10 +111,10 @@ class Channel:
                 # factor for alpha ranges from 0 to alpha-intensity, factor for eeg is scaled such that
                 # alpha-amplitude + eeg-amplitude = eeg-intensity
                 self._currentAlphaAmplitude = alphaFactor * self._alphaIntensity
-                eegAmplitude = self._eegIntensity * self._eegIntensity / (self._eegIntensity + self._currentAlphaAmplitude)
+                eegAmplitude = 5.0 * self._eegIntensity * self._eegIntensity / (self._eegIntensity + self._currentAlphaAmplitude)
             else:
                 # if alpha-intensity is zero, eeg amplitude is as defined
-                eegAmplitude = self._eegIntensity
+                eegAmplitude = 5.0 * self._eegIntensity
 
             # raw eeg is an interpolation between the noise value and the alpha sine wave
             rawEeg = eegAmplitude * self._currentEeg + self._currentAlphaAmplitude * self._currentAlpha
@@ -262,6 +262,53 @@ class EegRecording:
             {'name': 'O2', 'alpha':  0.3, 'eeg': 1.0, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['P8', 'CP6', 'P4', 'POz', 'Oz']},
 
             {'name': 'Alpha Total', 'alpha': 0.5, 'eeg': 0.0, 'uniqueness': 0.0, 'type': 'misc', 'neighbours': ['O1', 'Oz', 'O2', 'POz', 'P7', 'P3', 'Pz', 'P4', 'P8']}
+        ], 'standard_1005')
+
+    @staticmethod
+    def create_1010_32():
+        """
+        A static method to create a standard 32 channel cap in 10-10 system
+        :return: An EegRecording object
+        """
+        return EegRecording([
+
+            {'name': 'Fp1', 'alpha': 0.0, 'eeg': 1.4, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['F7', 'FC5', 'F3', 'AFz', 'Fpz']},
+            {'name': 'Fpz', 'alpha': 0.0, 'eeg': 1.4, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['Fp1', 'F3', 'AFz', 'F4', 'Fp2']},
+            {'name': 'Fp2', 'alpha':  0.0, 'eeg': 1.4, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['F8', 'FC6', 'F4', 'AFz', 'Fpz']},
+            {'name': 'AFz', 'alpha':  0.0, 'eeg': 1.4, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['Fp1', 'Fz', 'Fp2', 'F4', 'Fz', 'F3']},
+
+            {'name': 'F7', 'alpha':  0.0, 'eeg': 1.0, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['T7', 'FC5', 'F3', 'Fp1']},
+            {'name': 'F3', 'alpha':  0.0, 'eeg': 1.0, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['F7', 'FC5', 'C3', 'FC1', 'Fz', 'AFz', 'Fpz', 'Fp1']},
+            {'name': 'Fz', 'alpha':  0.0, 'eeg': 1.0, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['F3', 'FC1', 'Cz', 'FC2', 'F4', 'AFz']},
+            {'name': 'F4', 'alpha':  0.0, 'eeg': 1.0, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['F8', 'FC6', 'C4', 'FC2', 'Fz', 'AFz', 'Fpz', 'Fp2']},
+            {'name': 'F8', 'alpha':  0.0, 'eeg': 1.0, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['T8', 'FC6', 'F4', 'Fp2']},
+
+            {'name': 'FC5', 'alpha':  0.0, 'eeg': 1.0, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['T7', 'C3', 'FC1', 'F3', 'F7']},
+            {'name': 'FC1', 'alpha':  0.0, 'eeg': 1.0, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['F3', 'FC5', 'C3', 'Cz', 'Fp2', 'Fz']},
+            {'name': 'FC2', 'alpha':  0.0, 'eeg': 1.0, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['Fz', 'FC1', 'Cz', 'C4', 'FC6', 'F4']},
+            {'name': 'FC6', 'alpha':  0.0, 'eeg': 1.0, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['F8', 'F4', 'FC2', 'C4', 'T8']},
+
+            {'name': 'T7', 'alpha':  0.0, 'eeg': 1.0, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['P7', 'CP5', 'C3', 'FC5', 'F7']},
+            {'name': 'C3', 'alpha':  0.0, 'eeg': 1.0, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['F3', 'FC5', 'T7', 'CP5', 'P3', 'CP1', 'Cz', 'FC1']},
+            {'name': 'Cz', 'alpha':  0.0, 'eeg': 1.3, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['Fz', 'FC1', 'C3', 'CP1', 'Cz', 'CP2', 'C4', 'FC2']},
+            {'name': 'C4', 'alpha':  0.0, 'eeg': 1.0, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['F4', 'FC6', 'T8', 'CP6', 'P4', 'CP2', 'Cz', 'FC2']},
+            {'name': 'T8', 'alpha':  0.0, 'eeg': 1.0, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['P8', 'FC6', 'C4', 'CP6', 'F8']},
+
+            {'name': 'CP5', 'alpha':  0.1, 'eeg': 1.0, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['P7', 'O1', 'P3', 'CP1', 'C3', 'FC5', 'T7']},
+            {'name': 'CP1', 'alpha':  0.1, 'eeg': 1.0, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['FC1', 'C3', 'CP5', 'P3', 'POz', 'Pz', 'CP2', 'Cz']},
+            {'name': 'CP2', 'alpha':  0.1, 'eeg': 1.0, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['FC2', 'C4', 'CP6', 'P4', 'POz', 'Pz', 'CP1', 'Cz']},
+            {'name': 'CP6', 'alpha':  0.1, 'eeg': 1.0, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['P8', 'O2', 'P4', 'CP2', 'C4', 'FC6', 'T8']},
+
+            {'name': 'P7', 'alpha':  0.2, 'eeg': 1.0, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['T7', 'CP5', 'P3', 'O1']},
+            {'name': 'P3', 'alpha':  0.2, 'eeg': 1.0, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['P7', 'CP5', 'C3', 'CP1', 'Fz', 'POz', 'Oz', 'O1']},
+            {'name': 'Pz', 'alpha':  0.2, 'eeg': 1.0, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['P3', 'CP1', 'Cz', 'CP2', 'P4', 'POz']},
+            {'name': 'P4', 'alpha':  0.2, 'eeg': 1.0, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['P8', 'CP6', 'C4', 'CP2', 'Fz', 'POz', 'Oz', 'O2']},
+            {'name': 'P8', 'alpha':  0.2, 'eeg': 1.0, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['T8', 'CP6', 'P3', 'O2']},
+
+            {'name': 'POz', 'alpha':  0.3, 'eeg': 1.0, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['O1', 'P3', 'CP1', 'Fz', 'CP2', 'P4', 'O2', 'Oz']},
+            {'name': 'O1', 'alpha':  0.3, 'eeg': 1.0, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['P7', 'CP5', 'P3', 'POz', 'Oz']},
+            {'name': 'Oz', 'alpha':  0.3, 'eeg': 1.0, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['O1', 'P3', 'POz', 'P4', 'O2']},
+            {'name': 'O2', 'alpha':  0.3, 'eeg': 1.0, 'uniqueness': 0.3, 'type': 'eeg', 'neighbours': ['P8', 'CP6', 'P4', 'POz', 'Oz']},
         ], 'standard_1005')
 
     def get_info(self):

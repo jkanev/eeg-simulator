@@ -8,7 +8,9 @@ import random
 import datetime
 
 # init EEG class
-recording = EegRecording.create_1010_32A()
+#recording = EegRecording.create_1010_32A()
+recording = EegRecording.create_1010_32()
+#recording = EegRecording.create_1020_19A()
 chunk_size = 250  # samples of data
 dt = recording.get_dt()
 
@@ -19,6 +21,7 @@ stype = 'EEG'
 ssn = '{}—{}—{}'.format(random.randint(10000, 99999), random.randint(10000, 99999), random.randint(10000, 99999))
 snchannels = len(nme_info['ch_names'])
 sfreq = nme_info['sfreq']
+StreamInfo()
 lsl_info = StreamInfo(sname, stype, snchannels, sfreq, 'float32', ssn)
 lsl_out = StreamOutlet(lsl_info)
 print("Created LSL stream. "
